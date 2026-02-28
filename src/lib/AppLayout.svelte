@@ -91,5 +91,15 @@
     <main class="flex-1 overflow-auto px-6 py-4 bg-gray-50">
       <slot />
     </main>
+
+    <!-- funky under construction footer -->
+    <footer class="bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 px-6 py-4 text-white shadow-lg">
+      <div class="flex items-center justify-center gap-2 text-center">
+        <span class="text-lg">🚀</span>
+        <p class="text-sm font-bold">We're cooking up something amazing! But it's not quite done baking.</p>
+        <span class="text-lg">✨</span>
+      </div>
+      <p class="text-center text-xs opacity-90 mt-1">This app is under construction • Check back soon!</p>
+    </footer>
   </div>
 </div>
