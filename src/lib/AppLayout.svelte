@@ -23,6 +23,10 @@
   function toggleSidebar() {
     sidebarOpen = !sidebarOpen;
   }
+
+  function closeSidebar() {
+    sidebarOpen = false;
+  }
 </script>
 
 <div class="flex h-screen bg-gray-50">
@@ -30,15 +34,15 @@
   <aside class={`fixed inset-y-0 z-20 w-64 transform bg-white shadow-lg transition-transform duration-300 lg:relative lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
     <div class="flex h-full flex-col justify-between">
       <nav class="p-4">
-        <a href="/" class="flex items-center rounded px-3 py-2 text-gray-500 hover:bg-gray-100 bg-gray-50">
+        <a href="/" class="flex items-center rounded px-3 py-2 text-gray-500 hover:bg-gray-100 bg-gray-50" on:click={closeSidebar}>
           <Home class="h-4 w-4 mr-2" />
           <span>Home</span>
         </a>
-        <a href="/dashboard" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100">Dashboard</a>
-        <a href="/donations" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100">Donations</a>
-        <a href="/items" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100">Items</a>
-        <a href="/items/list" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100">Item List</a>
-        <a href="/settings" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100">Settings</a>
+        <a href="/dashboard" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100" on:click={closeSidebar}>Dashboard</a>
+        <a href="/donations" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100" on:click={closeSidebar}>Donations</a>
+        <a href="/items" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100" on:click={closeSidebar}>Items</a>
+        <a href="/items/list" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100" on:click={closeSidebar}>Item List</a>
+        <a href="/settings" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100" on:click={closeSidebar}>Settings</a>
       </nav>
       <div class="border-t p-4">
         {#if session}
@@ -60,6 +64,11 @@
       </div>
     </div>
   </aside>
+
+  <!-- mobile overlay -->
+  {#if sidebarOpen}
+    <div class="fixed inset-0 z-10 bg-black bg-opacity-50 lg:hidden" on:click={closeSidebar} on:keydown={(e) => {if (e.key === 'Enter' || e.key === ' ') closeSidebar();}} role="button" tabindex="0" aria-label="Close sidebar" ></div>
+  {/if}
 
   <!-- content area -->
   <div class="flex flex-1 flex-col">
