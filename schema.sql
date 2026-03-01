@@ -2,6 +2,26 @@
 -- Run this in a PostgreSQL/Supabase instance
 
 -- ------------------------------------------------------------------
+-- Roles (user roles)
+-- ------------------------------------------------------------------
+create table if not exists roles (
+    id              serial        primary key,
+    name            text          not null unique,
+    description     text,
+    created_at      timestamp with time zone default now()
+);
+
+-- Reset the ID sequence
+ALTER SEQUENCE roles_id_seq RESTART WITH 1;
+
+-- Insert default roles
+insert into roles (name, description) values
+    ('Administrator', 'Full system access and administrative privileges'),
+    ('Volunteer', 'Can manage donations and items'),
+    ('User', 'Basic user access')
+on conflict (name) do nothing;
+
+-- ------------------------------------------------------------------
 -- Profiles (extended user information)
 -- ------------------------------------------------------------------
 create table if not exists profiles (
@@ -9,8 +29,33 @@ create table if not exists profiles (
     full_name       text,
     avatar_url      text,
     locale          text,
+    role_id         integer references roles (id) on delete set null default 3,
     updated_at      timestamp with time zone default now()
 );
+
+create index if not exists profiles_role_idx on profiles(role_id);
+
+-- ------------------------------------------------------------------
+-- Function to create profile on user signup
+-- ------------------------------------------------------------------
+create or replace function public.handle_new_user()
+returns trigger as $$
+begin
+  insert into public.profiles (id, full_name, avatar_url, role_id)
+  values (
+    new.id,
+    new.raw_user_meta_data->>'full_name',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=' || new.id,
+    1
+  );
+  return new;
+end;
+$$ language plpgsql security definer set search_path = public;
+
+-- Create trigger on auth user creation
+create or replace trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();
 
 -- ------------------------------------------------------------------
 -- Donations (top-level container)
@@ -25,6 +70,9 @@ create table if not exists donations (
     updated_at      timestamp with time zone default now()
 );
 
+-- Reset the ID sequence
+ALTER SEQUENCE donations_id_seq RESTART WITH 1;
+
 -- optionally add an index on created_by if you query by user
 create index if not exists donations_created_by_idx on donations(created_by);
 
@@ -37,6 +85,9 @@ create table if not exists categories (
     description     text,
     created_at      timestamp with time zone default now()
 );
+
+-- Reset the ID sequence
+ALTER SEQUENCE categories_id_seq RESTART WITH 1;
 
 -- Insert default categories
 insert into categories (name, description) values
@@ -57,11 +108,11 @@ insert into categories (name, description) values
 on conflict (name) do nothing;
 
 -- ------------------------------------------------------------------
--- Items (belong to a donation)
+-- Items (can optionally belong to a donation)
 -- ------------------------------------------------------------------
 create table if not exists items (
     id              serial        primary key,
-    donation_id     integer       not null references donations (id) on delete cascade,
+    donation_id     integer       references donations (id) on delete set null,
     category_id     integer       references categories (id) on delete set null,
     name            text          not null,
     description     text,
@@ -71,6 +122,9 @@ create table if not exists items (
     created_at      timestamp with time zone default now(),
     updated_at      timestamp with time zone default now()
 );
+
+-- Reset the ID sequence
+ALTER SEQUENCE items_id_seq RESTART WITH 1;
 
 create index if not exists items_donation_idx on items(donation_id);
 create index if not exists items_category_idx on items(category_id);

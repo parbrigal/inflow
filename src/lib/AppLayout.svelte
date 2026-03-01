@@ -39,16 +39,16 @@
           <span>Home</span>
         </a>
         <a href="/dashboard" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100" on:click={closeSidebar}>Dashboard</a>
-        <a href="/donations" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100" on:click={closeSidebar}>Donations</a>
-        <a href="/items" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100" on:click={closeSidebar}>Items</a>
         <a href="/items/list" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100" on:click={closeSidebar}>Item List</a>
+        <a href="/items" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100" on:click={closeSidebar}>Items</a>
+        <a href="/donations" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100" on:click={closeSidebar}>Donations</a>
         <a href="/settings" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100" on:click={closeSidebar}>Settings</a>
       </nav>
       <div class="border-t p-4">
         {#if session}
         <div class="flex items-center justify-between">
           <div class="flex items-center">
-            <img src="https://via.placeholder.com/32" alt="avatar" class="h-8 w-8 rounded-full" />
+            <img src="https://robohash.org/pixel-cat-1?set=set4&size=32x32" alt="avatar" class="h-8 w-8 rounded-full" />
             <div class="ml-3">
               <p class="text-sm font-semibold text-gray-800">{session.user.email}</p>
               <a href="/profile" class="text-xs text-blue-600 hover:underline">View profile</a>
