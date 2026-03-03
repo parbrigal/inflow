@@ -9,6 +9,7 @@
     FileSpreadsheet,
     ImagePlus,
     Lock,
+    Menu,
     Search,
     Trash2,
     WandSparkles
@@ -48,6 +49,7 @@
   let aiLoading = false;
   let importingExcel = false;
   let showAiSourceModal = false;
+  let showMobileActionsMenu = false;
   let showImportMenu = false;
   let showAiDetectedItemModal = false;
   let detectedItemNames: string[] = [];
@@ -480,9 +482,84 @@
 </script>
 
 <div class="space-y-4">
-  <div class="flex items-center justify-between">
-    <h1 class="text-3xl font-bold">All Items</h1>
-    <div class="flex items-center gap-2">
+  <div class="space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
+    <div class="flex items-center justify-between">
+      <h1 class="text-3xl font-bold">All Items</h1>
+      <div class="relative sm:hidden">
+        <button
+          type="button"
+          class="ml-2 rounded bg-gray-800 p-2 text-white hover:bg-gray-900"
+          aria-label="Open inventory actions"
+          on:click={() => (showMobileActionsMenu = !showMobileActionsMenu)}
+        >
+          <Menu class="h-5 w-5" />
+        </button>
+
+        {#if showMobileActionsMenu}
+          <div class="absolute right-0 top-11 z-20 min-w-56 rounded border bg-white p-2 shadow">
+            <button
+              type="button"
+              class="flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+              on:click={() => {
+                showMobileActionsMenu = false;
+                triggerExcelImport();
+              }}
+              disabled={importingExcel}
+            >
+              <FileSpreadsheet class="h-4 w-4" />
+              {importingExcel ? 'Importing...' : 'Import Excel'}
+            </button>
+            <button
+              type="button"
+              class="flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+              on:click={() => {
+                showMobileActionsMenu = false;
+                downloadItemsTemplate();
+              }}
+            >
+              <Download class="h-4 w-4" />
+              Download Template
+            </button>
+            <button
+              type="button"
+              class="flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+              on:click={() => {
+                showMobileActionsMenu = false;
+                openAiSourceModal();
+              }}
+              disabled={aiLoading}
+            >
+              <WandSparkles class="h-4 w-4" />
+              {aiLoading ? 'Analyzing...' : 'AI Add Items'}
+            </button>
+            <button
+              type="button"
+              class="flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-400"
+              on:click={() => {
+                selectedDonationId = null;
+                showLinkDonationModal = true;
+                showMobileActionsMenu = false;
+              }}
+              disabled={!hasSelectedItems}
+            >
+              Link to Donation
+            </button>
+            <button
+              type="button"
+              class="flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+              on:click={() => {
+                showAddModal = true;
+                showMobileActionsMenu = false;
+              }}
+            >
+              + Add Item
+            </button>
+          </div>
+        {/if}
+      </div>
+    </div>
+
+    <div class="hidden items-center gap-2 sm:flex">
       <div class="relative flex items-center">
         <button
           class="flex h-10 items-center gap-2 rounded-l bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-400"
