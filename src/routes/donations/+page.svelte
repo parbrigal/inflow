@@ -6,6 +6,10 @@
     id: number;
     name: string;
     description: string | null;
+    donor_name: string;
+    donor_lastname: string;
+    address: string;
+    contact_no: string;
     status: string;
     created_by: string;
     created_at: string;
@@ -15,6 +19,13 @@
   interface NewDonation {
     name: string;
     description: string;
+    donor_type: 'Individual' | 'Organization';
+    organization_name: string;
+    donor_name: string;
+    donor_lastname: string;
+    address: string;
+    country_code: string;
+    contact_no: string;
     status: string;
   }
 
@@ -28,6 +39,13 @@
   let newDonation: NewDonation = {
     name: '',
     description: '',
+    donor_type: 'Individual',
+    organization_name: '',
+    donor_name: '',
+    donor_lastname: '',
+    address: '',
+    country_code: '+1',
+    contact_no: '',
     status: 'active'
   };
 
@@ -69,12 +87,17 @@
     }
 
     addingDonation = true;
+    const formattedContactNo = `${newDonation.country_code} ${newDonation.contact_no}`.trim();
 
     const { error: donationInsertError } = await supabase
       .from('donations')
       .insert({
         name: newDonation.name,
         description: newDonation.description || null,
+        donor_name: newDonation.donor_name,
+        donor_lastname: newDonation.donor_lastname,
+        address: newDonation.address,
+        contact_no: formattedContactNo,
         status: newDonation.status,
         created_by: user.id
       });
@@ -89,6 +112,13 @@
     newDonation = {
       name: '',
       description: '',
+      donor_type: 'Individual',
+      organization_name: '',
+      donor_name: '',
+      donor_lastname: '',
+      address: '',
+      country_code: '+1',
+      contact_no: '',
       status: 'active'
     };
     await fetchDonations();
@@ -105,6 +135,7 @@
       class="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700"
       on:click={() => {
         error = null;
+        newDonation.donor_type = 'Individual';
         showAddDonationModal = true;
       }}
     >
@@ -130,6 +161,7 @@
         on:click={() => openModal(d)}
       >
         <h2 class="text-xl font-semibold text-gray-800">{d.name}</h2>
+        <p class="mt-1 text-gray-600">Contact: {d.donor_name} {d.donor_lastname}</p>
         <p class="mt-2 text-gray-500">Status: {d.status}</p>
       </button>
     {/each}
@@ -149,6 +181,62 @@
           <label for="donation-description" class="block text-sm font-medium">Description</label>
           <textarea id="donation-description" bind:value={newDonation.description} class="mt-1 w-full rounded border p-2"></textarea>
         </div>
+        <div>
+          <label for="donor-type" class="block text-sm font-medium">Donor Type</label>
+          <select id="donor-type" bind:value={newDonation.donor_type} class="mt-1 w-full rounded border p-2" required>
+            <option value="Individual">Individual</option>
+            <option value="Organization">Organization</option>
+          </select>
+        </div>
+        {#if newDonation.donor_type === 'Organization'}
+          <div>
+            <label for="organization-name" class="block text-sm font-medium">Organization Name</label>
+            <input
+              id="organization-name"
+              bind:value={newDonation.organization_name}
+              class="mt-1 w-full rounded border p-2"
+              required
+            />
+          </div>
+        {/if}
+        <div>
+          <label for="donor-name" class="block text-sm font-medium">Contact Name</label>
+          <input id="donor-name" bind:value={newDonation.donor_name} class="mt-1 w-full rounded border p-2" required />
+        </div>
+        <div>
+          <label for="donor-lastname" class="block text-sm font-medium">Contact Last Name</label>
+          <input id="donor-lastname" bind:value={newDonation.donor_lastname} class="mt-1 w-full rounded border p-2" required />
+        </div>
+        <div>
+          <label for="donor-address" class="block text-sm font-medium">Address</label>
+          <textarea
+            id="donor-address"
+            bind:value={newDonation.address}
+            class="mt-1 w-full rounded border p-2"
+            rows="3"
+            required
+          ></textarea>
+        </div>
+        <div>
+          <label for="donor-contact" class="block text-sm font-medium">Contact No</label>
+          <div class="mt-1 grid grid-cols-3 gap-2">
+            <input
+              id="donor-country-code"
+              bind:value={newDonation.country_code}
+              class="rounded border p-2"
+              placeholder="+1"
+              required
+            />
+            <input
+              id="donor-contact"
+              bind:value={newDonation.contact_no}
+              class="col-span-2 rounded border p-2"
+              placeholder="Phone number"
+              required
+            />
+          </div>
+          <p class="mt-1 text-xs text-gray-500">Country code defaults to US (+1)</p>
+        </div>
      
         <div class="flex justify-end gap-2">
           <button
@@ -159,6 +247,13 @@
               newDonation = {
                 name: '',
                 description: '',
+                donor_type: 'Individual',
+                organization_name: '',
+                donor_name: '',
+                donor_lastname: '',
+                address: '',
+                country_code: '+1',
+                contact_no: '',
                 status: 'active'
               };
             }}
@@ -187,6 +282,10 @@
       </div>
       <div class="mt-4 space-y-2 text-gray-700">
         <p><strong>Description:</strong> {selected.description || '—'}</p>
+        <p><strong>Contact Name:</strong> {selected.donor_name}</p>
+        <p><strong>Contact Last Name:</strong> {selected.donor_lastname}</p>
+        <p><strong>Address:</strong> {selected.address}</p>
+        <p><strong>Contact No:</strong> {selected.contact_no}</p>
         <p><strong>Status:</strong> {selected.status}</p>
         <p><strong>Created by:</strong> {selected.created_by}</p>
         <p><strong>Created at:</strong> {new Date(selected.created_at).toLocaleString()}</p>

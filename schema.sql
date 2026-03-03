@@ -64,11 +64,24 @@ create table if not exists donations (
     id              serial        primary key,
     name            text          not null,
     description     text,
+    donor_type      text          not null default 'Individual',
+    organization_name text,
+    donor_name      text          not null,
+    donor_lastname  text          not null,
+    address         text          not null,
+    contact_no      text          not null,
     status          text          default 'active',
     created_by      uuid          not null references auth.users (id),
     created_at      timestamp with time zone default now(),
     updated_at      timestamp with time zone default now()
 );
+
+alter table donations add column if not exists donor_name text not null default '';
+alter table donations add column if not exists donor_lastname text not null default '';
+alter table donations add column if not exists address text not null default '';
+alter table donations add column if not exists contact_no text not null default '';
+alter table donations add column if not exists donor_type text not null default 'Individual';
+alter table donations add column if not exists organization_name text;
 
 -- Reset the ID sequence
 ALTER SEQUENCE donations_id_seq RESTART WITH 1;

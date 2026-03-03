@@ -46,6 +46,7 @@
 		"date-fns": "^4.1.0",
 		"install": "^0.13.0",
 		"lucide-svelte": "^0.575.0",
-		"tailwindcss": "^4.2.1"
+		"tailwindcss": "^4.2.1",
+		"xlsx": "^0.18.5"
 	}
 }

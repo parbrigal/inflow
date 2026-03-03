@@ -8,11 +8,11 @@
 -- replace these with real UUIDs from auth.users
 
 -- donations
-insert into donations (name, description, status, created_by) values
-('Summer Clothes Drive', 'Collecting gently used clothing for families', 'active', '789a8e85-39b2-4fcd-8a75-ad78b6547a14'),
-('Winter Shelter Supplies', 'Blankets, sleeping bags, and warm gear', 'active', '789a8e85-39b2-4fcd-8a75-ad78b6547a14'),
-('Food Bank Donation', 'Non-perishable food items and canned goods', 'completed', '789a8e85-39b2-4fcd-8a75-ad78b6547a14'),
-('Office Cleaning Supplies', 'Disinfectants, paper towels, hand soap', 'pending', '789a8e85-39b2-4fcd-8a75-ad78b6547a14');
+insert into donations (name, description, donor_name, donor_lastname, address, contact_no, status, created_by) values
+('Summer Clothes Drive', 'Collecting gently used clothing for families', 'Maria', 'Santos', '123 Rizal St, Manila', '09171234567', 'active', '789a8e85-39b2-4fcd-8a75-ad78b6547a14'),
+('Winter Shelter Supplies', 'Blankets, sleeping bags, and warm gear', 'John', 'Reyes', '45 Mabini Ave, Quezon City', '09981234567', 'active', '789a8e85-39b2-4fcd-8a75-ad78b6547a14'),
+('Food Bank Donation', 'Non-perishable food items and canned goods', 'Liza', 'Cruz', '88 Bonifacio Rd, Pasig', '09192345678', 'completed', '789a8e85-39b2-4fcd-8a75-ad78b6547a14'),
+('Office Cleaning Supplies', 'Disinfectants, paper towels, hand soap', 'Paolo', 'Garcia', '210 Kalayaan St, Makati', '09081234567', 'pending', '789a8e85-39b2-4fcd-8a75-ad78b6547a14');
 
 -- items tied to the first donation
 insert into items (donation_id, name, description, quantity, status, created_by) values

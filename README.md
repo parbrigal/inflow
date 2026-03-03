@@ -29,6 +29,12 @@ npm run dev
 npm run dev -- --open
 ```
 
+For AI item detection from images, add this environment variable in your local `.env` file:
+
+```sh
+GOOGLE_VISION_API_KEY=your_google_cloud_vision_api_key
+```
+
 ## Building
 
 To create a production version of your app:
