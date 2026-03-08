@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { beforeNavigate } from '$app/navigation';
   import { supabase } from '$lib/supabaseClient';
   import {
     Camera,
@@ -57,6 +58,8 @@
   let detectedItemIndex = 0;
   let aiItemsAdded = 0;
   let excelImportInput: HTMLInputElement | undefined;
+  let aiCameraDebugLogs: string[] = [];
+  let aiCaptureInProgress = false;
   let aiDetectedItem: Partial<Item> = {
     name: '',
     quantity: 1,
@@ -73,6 +76,18 @@
     const matchesCategory = selectedCategoryFilter === null || item.category_id === selectedCategoryFilter;
     return matchesSearch && matchesCategory;
   });
+
+  function pushAiCameraDebug(step: string, details?: string) {
+    const timestamp = new Date().toLocaleTimeString();
+    const message = `${timestamp} • ${step}${details ? ` — ${details}` : ''}`;
+    aiCameraDebugLogs = [message, ...aiCameraDebugLogs].slice(0, 8);
+    console.info('[AI Camera Debug]', message);
+  }
+
+  function markAiPickerOpen(source: 'upload' | 'camera') {
+    aiCaptureInProgress = source === 'camera';
+    pushAiCameraDebug('Image picker opened', `source=${source}`);
+  }
 
   async function addItem() {
     loading = true;
@@ -262,6 +277,9 @@
   function openAiSourceModal() {
     showAiSourceModal = true;
     error = null;
+    aiCaptureInProgress = false;
+    aiCameraDebugLogs = [];
+    pushAiCameraDebug('AI source modal opened');
   }
 
   function setDetectedItemFormDefaults(itemName: string) {
@@ -355,23 +373,35 @@
 
   async function handleAiImageSelected(event: Event) {
     const input = event.currentTarget as HTMLInputElement;
+    const source = (input.dataset.source as 'upload' | 'camera' | undefined) || 'upload';
     const selectedFile = input.files?.[0];
+    const selectedFilesCount = input.files?.length || 0;
     input.value = '';
 
+    pushAiCameraDebug('Image selection event', `source=${source}, files=${selectedFilesCount}`);
+
     if (!selectedFile) {
+      aiCaptureInProgress = false;
+      if (source === 'camera') {
+        error = 'Camera did not return an image file. Please try again.';
+      }
+      pushAiCameraDebug('No file received', `source=${source}`);
       return;
     }
 
+    pushAiCameraDebug('File received', `name=${selectedFile.name || 'camera-capture'}, type=${selectedFile.type || 'unknown'}, size=${selectedFile.size}B`);
     showAiSourceModal = false;
-    await detectItemsFromImage(selectedFile);
+    await detectItemsFromImage(selectedFile, source);
   }
 
-  async function detectItemsFromImage(file: File) {
+  async function detectItemsFromImage(file: File, source: 'upload' | 'camera' = 'upload') {
     aiLoading = true;
     error = null;
 
     try {
+      pushAiCameraDebug('Analyzing image started', `source=${source}, originalSize=${file.size}B`);
       const optimizedFile = await optimizeImageForUpload(file);
+      pushAiCameraDebug('Image prepared', `uploadSize=${optimizedFile.size}B, type=${optimizedFile.type || 'unknown'}`);
       const formData = new FormData();
       formData.append('image', optimizedFile);
 
@@ -379,6 +409,7 @@
         method: 'POST',
         body: formData
       });
+      pushAiCameraDebug('Vision API response', `status=${response.status}`);
 
       const responseBody = await response.text();
       let data: any = null;
@@ -390,8 +421,10 @@
 
       if (!response.ok) {
         if (response.status === 413) {
+          pushAiCameraDebug('Vision API rejected image', 'status=413 payload too large');
           throw new Error('Image is too large. Please retake the photo and try again.');
         }
+        pushAiCameraDebug('Vision API error body', responseBody.slice(0, 160));
         throw new Error(data?.error || 'Unable to analyze image.');
       }
 
@@ -410,10 +443,13 @@
       aiItemsAdded = 0;
       setDetectedItemFormDefaults(detectedItemNames[0]);
       showAiDetectedItemModal = true;
+      pushAiCameraDebug('AI detection success', `items=${detectedNames.length}`);
     } catch (e) {
       error = e instanceof Error ? e.message : 'Unable to analyze image.';
+      pushAiCameraDebug('AI detection failed', error || 'Unknown error');
     } finally {
       aiLoading = false;
+      aiCaptureInProgress = false;
     }
   }
 
@@ -560,6 +596,20 @@
     setTimeout(() => (toast = null), 3000);
   }
 
+  beforeNavigate((navigation) => {
+    if (!aiCaptureInProgress) {
+      return;
+    }
+
+    const nextPath = navigation.to?.url.pathname || '(unknown)';
+    if (nextPath === '/dashboard') {
+      navigation.cancel();
+      error = 'Camera flow was interrupted by an unexpected navigation to Dashboard.';
+      pushAiCameraDebug('Navigation blocked', `to=${nextPath}`);
+      aiCaptureInProgress = false;
+    }
+  });
+
   onMount(async () => {
     // get current user
     const { data: sessionData } = await supabase.auth.getSession();
@@ -583,6 +633,28 @@
       items = res.data as Item[];
     }
     loading = false;
+  });
+
+  onMount(() => {
+    const handleVisibilityChange = () => {
+      if (aiCaptureInProgress || aiLoading || showAiSourceModal) {
+        pushAiCameraDebug('Visibility changed', `state=${document.visibilityState}`);
+      }
+    };
+
+    const handlePageHide = () => {
+      if (aiCaptureInProgress || aiLoading || showAiSourceModal) {
+        pushAiCameraDebug('Page hide event', `path=${window.location.pathname}`);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', handlePageHide);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', handlePageHide);
+    };
   });
 </script>
 
@@ -858,6 +930,17 @@
       {/each}
     </ul>
   {/if}
+
+  {#if aiCameraDebugLogs.length > 0}
+    <div class="rounded border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+      <p class="font-semibold">AI camera debug log</p>
+      <ul class="mt-1 space-y-1">
+        {#each aiCameraDebugLogs as log}
+          <li>{log}</li>
+        {/each}
+      </ul>
+    </div>
+  {/if}
 </div>
 
 <input
@@ -881,6 +964,8 @@
             type="file"
             accept="image/*"
             class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+            data-source="upload"
+            on:click={() => markAiPickerOpen('upload')}
             on:change={handleAiImageSelected}
           />
         </label>
@@ -892,6 +977,8 @@
             accept="image/*"
             capture="environment"
             class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+            data-source="camera"
+            on:click={() => markAiPickerOpen('camera')}
             on:change={handleAiImageSelected}
           />
         </label>
@@ -900,7 +987,11 @@
         <button
           type="button"
           class="px-4 py-2"
-          on:click={() => (showAiSourceModal = false)}
+          on:click={() => {
+            showAiSourceModal = false;
+            aiCaptureInProgress = false;
+            pushAiCameraDebug('AI source modal closed');
+          }}
         >
           Cancel
         </button>
