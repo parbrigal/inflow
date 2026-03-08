@@ -57,8 +57,6 @@
   let detectedItemIndex = 0;
   let aiItemsAdded = 0;
   let excelImportInput: HTMLInputElement | undefined;
-  let uploadImageInput: HTMLInputElement | undefined;
-  let captureImageInput: HTMLInputElement | undefined;
   let aiDetectedItem: Partial<Item> = {
     name: '',
     quantity: 1,
@@ -264,14 +262,6 @@
   function openAiSourceModal() {
     showAiSourceModal = true;
     error = null;
-  }
-
-  function triggerFileUpload() {
-    uploadImageInput?.click();
-  }
-
-  function triggerCameraCapture() {
-    captureImageInput?.click();
   }
 
   function setDetectedItemFormDefaults(itemName: string) {
@@ -789,45 +779,33 @@
   on:change={handleExcelImportSelected}
 />
 
-<input
-  bind:this={uploadImageInput}
-  type="file"
-  accept="image/*"
-  class="hidden"
-  on:change={handleAiImageSelected}
-/>
-
-<input
-  bind:this={captureImageInput}
-  type="file"
-  accept="image/*"
-  capture="environment"
-  class="hidden"
-  on:change={handleAiImageSelected}
-/>
-
 {#if showAiSourceModal}
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
     <div class="w-full max-w-md rounded-lg bg-white p-6">
       <h3 class="mb-4 text-xl font-bold">AI Add Items</h3>
       <p class="mb-4 text-sm text-gray-600">Upload an image or take a photo to detect items.</p>
       <div class="space-y-2">
-        <button
-          type="button"
-          class="flex w-full items-center justify-center gap-2 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-          on:click|preventDefault={triggerFileUpload}
-        >
+        <label class="relative flex w-full cursor-pointer items-center justify-center gap-2 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
           <ImagePlus class="h-4 w-4" />
           Add Picture
-        </button>
-        <button
-          type="button"
-          class="flex w-full items-center justify-center gap-2 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-          on:click|preventDefault={triggerCameraCapture}
-        >
+          <input
+            type="file"
+            accept="image/*"
+            class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+            on:change={handleAiImageSelected}
+          />
+        </label>
+        <label class="relative flex w-full cursor-pointer items-center justify-center gap-2 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
           <Camera class="h-4 w-4" />
           Take Picture
-        </button>
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"
+            class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+            on:change={handleAiImageSelected}
+          />
+        </label>
       </div>
       <div class="mt-6 flex justify-end">
         <button
