@@ -36,7 +36,8 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
         return json({ error: 'Image file is required.' }, { status: 400 });
     }
 
-    if (!image.type.startsWith('image/')) {
+    const mimeType = (image.type || '').toLowerCase();
+    if (mimeType && !mimeType.startsWith('image/')) {
         return json({ error: 'Only image files are supported.' }, { status: 400 });
     }
 

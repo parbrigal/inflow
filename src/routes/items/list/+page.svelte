@@ -58,6 +58,7 @@
   let aiItemsAdded = 0;
   let excelImportInput: HTMLInputElement | undefined;
   let uploadImageInput: HTMLInputElement | undefined;
+  let captureImageInput: HTMLInputElement | undefined;
   let aiDetectedItem: Partial<Item> = {
     name: '',
     quantity: 1,
@@ -266,17 +267,11 @@
   }
 
   function triggerFileUpload() {
-    if (uploadImageInput) {
-      uploadImageInput.removeAttribute('capture');
-    }
     uploadImageInput?.click();
   }
 
   function triggerCameraCapture() {
-    if (uploadImageInput) {
-      uploadImageInput.setAttribute('capture', 'environment');
-    }
-    uploadImageInput?.click();
+    captureImageInput?.click();
   }
 
   function setDetectedItemFormDefaults(itemName: string) {
@@ -294,7 +289,6 @@
     const input = event.currentTarget as HTMLInputElement;
     const selectedFile = input.files?.[0];
     input.value = '';
-    input.removeAttribute('capture');
 
     if (!selectedFile) {
       return;
@@ -803,6 +797,15 @@
   on:change={handleAiImageSelected}
 />
 
+<input
+  bind:this={captureImageInput}
+  type="file"
+  accept="image/*"
+  capture="environment"
+  class="hidden"
+  on:change={handleAiImageSelected}
+/>
+
 {#if showAiSourceModal}
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
     <div class="w-full max-w-md rounded-lg bg-white p-6">
@@ -812,7 +815,7 @@
         <button
           type="button"
           class="flex w-full items-center justify-center gap-2 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-          on:click={triggerFileUpload}
+          on:click|preventDefault={triggerFileUpload}
         >
           <ImagePlus class="h-4 w-4" />
           Add Picture
@@ -820,7 +823,7 @@
         <button
           type="button"
           class="flex w-full items-center justify-center gap-2 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-          on:click={triggerCameraCapture}
+          on:click|preventDefault={triggerCameraCapture}
         >
           <Camera class="h-4 w-4" />
           Take Picture
