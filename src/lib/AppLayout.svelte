@@ -41,6 +41,7 @@
         </a>
         <a href="/dashboard" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100" on:click={closeSidebar}>Dashboard</a>
         <a href="/items/list" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100" on:click={closeSidebar}>Inventory</a>
+        <a href="/wishlist" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100" on:click={closeSidebar}>Wishlist</a>
         <a href="/items" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100" on:click={closeSidebar}>Items</a>
         <a href="/donations" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100" on:click={closeSidebar}>Donations</a>
         <a href="/settings" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100" on:click={closeSidebar}>Settings</a>

@@ -9,6 +9,7 @@
     Edit,
     FileSpreadsheet,
     ImagePlus,
+    Link2,
     Lock,
     Menu,
     Search,
@@ -607,6 +608,35 @@
     }
   }
 
+  function getDonationNameById(donationId: number | null) {
+    if (donationId === null) {
+      return null;
+    }
+
+    return donations.find((donation) => donation.id === donationId)?.name ?? 'Unknown donation';
+  }
+
+  async function unlinkItemFromDonation(item: Item) {
+    if (item.donation_id === null) {
+      return;
+    }
+
+    const { error: updateError } = await supabase
+      .from('items')
+      .update({ donation_id: null })
+      .eq('id', item.id);
+
+    if (updateError) {
+      error = updateError.message;
+      return;
+    }
+
+    const res = await supabase.from('items').select('*, categories(name)');
+    items = (res.data as Item[]) || [];
+    toast = 'Item unlinked from donation';
+    setTimeout(() => (toast = null), 3000);
+  }
+
   async function deleteItem(item: Item) {
     const { error: deleteError } = await supabase.from('items').delete().eq('id', item.id);
 
@@ -909,23 +939,38 @@
   {:else}
     <ul class="space-y-2">
       {#each filteredItems as item}
-        <li class="flex items-start justify-between rounded bg-white p-4 shadow">
-          <div class="flex items-center gap-3">
+        <li class="flex items-center rounded p-4 shadow {item.donation_id !== null ? 'bg-blue-50' : 'bg-white'}">
+          <div class="flex flex-1 items-center gap-3">
             <input
               type="checkbox"
               checked={selectedItemIds.includes(item.id)}
               on:change={(event) => toggleItemSelection(item.id, (event.currentTarget as HTMLInputElement).checked)}
               aria-label={`Select ${item.name}`}
             />
-            <div>
-              <h2 class="font-semibold">{item.name}</h2>
-              <p class="text-sm text-gray-500">Qty: {item.quantity} — {item.status}</p>
+            <div class="flex items-center gap-2">
+              <div>
+                <h2 class="font-semibold">{item.name}</h2>
+                <p class="text-sm text-gray-500">Qty: {item.quantity} — {item.status}</p>
+              </div>
             </div>
             {#if item.categories}
               <span class="rounded bg-blue-100 px-3 py-1 text-sm text-blue-700">{item.categories.name}</span>
             {/if}
           </div>
-          <div class="flex items-center gap-1">
+          <div class="flex w-12 justify-center">
+            {#if item.donation_id !== null}
+              <button
+                type="button"
+                class="rounded bg-blue-100 p-2 text-blue-700 hover:bg-blue-200"
+                on:click={() => unlinkItemFromDonation(item)}
+                title={`Linked to donation: ${getDonationNameById(item.donation_id)}`}
+                aria-label={`Unlink item from donation ${getDonationNameById(item.donation_id)}`}
+              >
+                <Link2 class="h-4 w-4" />
+              </button>
+            {/if}
+          </div>
+          <div class="ml-2 flex items-center gap-1">
             <button
               type="button"
               class="rounded p-2 {item.status === 'reserved' ? 'text-yellow-600 bg-yellow-50 hover:bg-yellow-100' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}"

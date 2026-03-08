@@ -29,6 +29,15 @@ insert into items (donation_id, name, description, quantity, status, created_by)
 (3, 'Canned Soup', 'Chicken noodle', 120, 'distributed', '789a8e85-39b2-4fcd-8a75-ad78b6547a14'),
 (3, 'Rice Bags', '5kg each', 50, 'distributed', '789a8e85-39b2-4fcd-8a75-ad78b6547a14');
 
+-- wishlist/requests mock data
+-- assumes categories from schema.sql already exist (ids 1..14)
+insert into requests (category_id, name, description, status, requested_by) values
+(1, 'Kids School Uniforms', 'Sizes 8-14 needed for back-to-school support', 'pending', '789a8e85-39b2-4fcd-8a75-ad78b6547a14'),
+(2, 'Pillows', 'Standard size pillows for family shelters', 'pending', '789a8e85-39b2-4fcd-8a75-ad78b6547a14'),
+(3, 'Canned Tuna', 'Easy-open cans preferred', 'reserved', '789a8e85-39b2-4fcd-8a75-ad78b6547a14'),
+(4, 'Toothbrush Kits', 'Toothbrush + toothpaste combo packs', 'pending', '789a8e85-39b2-4fcd-8a75-ad78b6547a14'),
+(8, 'Cookware Set', 'Basic pots and pans for relocation homes', 'fulfilled', '789a8e85-39b2-4fcd-8a75-ad78b6547a14');
+
 -- You can run this with psql or via Supabase SQL editor:
 -- \i mock-donations.sql
 

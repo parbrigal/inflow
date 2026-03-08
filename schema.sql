@@ -159,6 +159,24 @@ create table if not exists attachments (
 create index if not exists attachments_item_idx on attachments(item_id);
 
 -- ------------------------------------------------------------------
+-- Requests (can optionally belong to a donation)
+-- ------------------------------------------------------------------
+
+create table if not exists requests (
+    id              serial        primary key,
+    category_id     integer       references categories (id) on delete set null,
+    name            text          not null,
+    description     text,
+    status          text          default 'pending',
+    requested_by    uuid          not null references auth.users (id),
+    created_at      timestamp with time zone default now(),
+    updated_at      timestamp with time zone default now()
+);
+
+-- Reset the ID sequence
+ALTER SEQUENCE requests_id_seq RESTART WITH 1;
+
+-- ------------------------------------------------------------------
 -- Activity (audit trail)
 -- ------------------------------------------------------------------
 create table if not exists activity (
