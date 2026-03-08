@@ -51,13 +51,13 @@
   let showAiSourceModal = false;
   let showMobileActionsMenu = false;
   let showImportMenu = false;
+  let showAddMenu = false;
   let showAiDetectedItemModal = false;
   let detectedItemNames: string[] = [];
   let detectedItemIndex = 0;
   let aiItemsAdded = 0;
   let excelImportInput: HTMLInputElement | undefined;
   let uploadImageInput: HTMLInputElement | undefined;
-  let captureImageInput: HTMLInputElement | undefined;
   let aiDetectedItem: Partial<Item> = {
     name: '',
     quantity: 1,
@@ -266,11 +266,17 @@
   }
 
   function triggerFileUpload() {
+    if (uploadImageInput) {
+      uploadImageInput.removeAttribute('capture');
+    }
     uploadImageInput?.click();
   }
 
   function triggerCameraCapture() {
-    captureImageInput?.click();
+    if (uploadImageInput) {
+      uploadImageInput.setAttribute('capture', 'environment');
+    }
+    uploadImageInput?.click();
   }
 
   function setDetectedItemFormDefaults(itemName: string) {
@@ -288,6 +294,7 @@
     const input = event.currentTarget as HTMLInputElement;
     const selectedFile = input.files?.[0];
     input.value = '';
+    input.removeAttribute('capture');
 
     if (!selectedFile) {
       return;
@@ -408,6 +415,31 @@
       showLinkDonationModal = false;
     }
 
+    loading = false;
+  }
+
+  async function deleteSelectedItems() {
+    if (selectedItemIds.length === 0) {
+      return;
+    }
+
+    loading = true;
+    const idsToDelete = [...selectedItemIds];
+    const { error: deleteError } = await supabase.from('items').delete().in('id', idsToDelete);
+
+    if (deleteError) {
+      error = deleteError.message;
+      loading = false;
+      return;
+    }
+
+    const res = await supabase.from('items').select('*, categories(name)');
+    items = (res.data as Item[]) || [];
+    selectedItemIds = [];
+    selectedDonationId = null;
+    showLinkDonationModal = false;
+    toast = `${idsToDelete.length} item${idsToDelete.length === 1 ? '' : 's'} deleted successfully`;
+    setTimeout(() => (toast = null), 3000);
     loading = false;
   }
 
@@ -534,18 +566,6 @@
             </button>
             <button
               type="button"
-              class="flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-400"
-              on:click={() => {
-                selectedDonationId = null;
-                showLinkDonationModal = true;
-                showMobileActionsMenu = false;
-              }}
-              disabled={!hasSelectedItems}
-            >
-              Link to Donation
-            </button>
-            <button
-              type="button"
               class="flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
               on:click={() => {
                 showAddModal = true;
@@ -557,6 +577,32 @@
           </div>
         {/if}
       </div>
+    </div>
+
+    <div class="grid gap-2 sm:hidden">
+      <button
+        class="w-full rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+        on:click={() => {
+          selectedDonationId = null;
+          showLinkDonationModal = true;
+          showMobileActionsMenu = false;
+        }}
+        disabled={!hasSelectedItems}
+      >
+        Link to Donation
+      </button>
+      <button
+        type="button"
+        class="flex w-full items-center justify-center gap-2 rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+        on:click={() => {
+          showMobileActionsMenu = false;
+          deleteSelectedItems();
+        }}
+        disabled={!hasSelectedItems}
+      >
+        <Trash2 class="h-4 w-4" />
+        Delete Selected
+      </button>
     </div>
 
     <div class="hidden items-center gap-2 sm:flex">
@@ -573,7 +619,10 @@
           type="button"
           class="flex h-10 items-center rounded-r bg-emerald-600 px-2 py-2 text-white hover:bg-emerald-700"
           title="Import options"
-          on:click={() => (showImportMenu = !showImportMenu)}
+          on:click={() => {
+            showImportMenu = !showImportMenu;
+            showAddMenu = false;
+          }}
         >
           <ChevronDown class="h-4 w-4" />
         </button>
@@ -593,14 +642,6 @@
         {/if}
       </div>
       <button
-        class="flex items-center gap-2 rounded bg-purple-600 px-4 py-2 text-white hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-        on:click={openAiSourceModal}
-        disabled={aiLoading}
-      >
-        <WandSparkles class="h-4 w-4" />
-        {aiLoading ? 'Analyzing...' : 'AI Add Items'}
-      </button>
-      <button
         class="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
         on:click={() => {
           selectedDonationId = null;
@@ -611,11 +652,54 @@
         Link to Donation
       </button>
       <button
-        class="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700"
-        on:click={() => (showAddModal = true)}
+        type="button"
+        class="flex items-center gap-2 rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+        on:click={deleteSelectedItems}
+        disabled={!hasSelectedItems}
       >
-        + Add Item
+        <Trash2 class="h-4 w-4" />
+        Delete Selected
       </button>
+      <div class="relative flex items-center">
+        <button
+          type="button"
+          class="flex h-10 items-center rounded-l bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+          on:click={() => {
+            showAddModal = true;
+            showAddMenu = false;
+          }}
+        >
+          + Add Item
+        </button>
+        <button
+          type="button"
+          class="flex h-10 items-center rounded-r bg-green-600 px-2 py-2 text-white hover:bg-green-700"
+          title="Add options"
+          on:click={() => {
+            showAddMenu = !showAddMenu;
+            showImportMenu = false;
+          }}
+        >
+          <ChevronDown class="h-4 w-4" />
+        </button>
+
+        {#if showAddMenu}
+          <div class="absolute right-0 top-11 z-10 min-w-48 rounded border bg-white p-1 shadow">
+            <button
+              type="button"
+              class="flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-400"
+              on:click={() => {
+                showAddMenu = false;
+                openAiSourceModal();
+              }}
+              disabled={aiLoading}
+            >
+              <WandSparkles class="h-4 w-4" />
+              {aiLoading ? 'Analyzing...' : 'AI Add Items'}
+            </button>
+          </div>
+        {/if}
+      </div>
     </div>
   </div>
 
@@ -715,15 +799,6 @@
   bind:this={uploadImageInput}
   type="file"
   accept="image/*"
-  class="hidden"
-  on:change={handleAiImageSelected}
-/>
-
-<input
-  bind:this={captureImageInput}
-  type="file"
-  accept="image/*"
-  capture="environment"
   class="hidden"
   on:change={handleAiImageSelected}
 />

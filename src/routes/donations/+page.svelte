@@ -16,6 +16,12 @@
     updated_at: string;
   }
 
+  interface LinkedItem {
+    id: number;
+    name: string;
+    quantity: number;
+  }
+
   interface NewDonation {
     name: string;
     description: string;
@@ -35,6 +41,9 @@
   let showAddDonationModal = false;
   let toast: string | null = null;
   let error: string | null = null;
+  let linkedItemsError: string | null = null;
+  let linkedItemsLoading = false;
+  let linkedItems: LinkedItem[] = [];
   let addingDonation = false;
   let newDonation: NewDonation = {
     name: '',
@@ -65,14 +74,44 @@
     await fetchDonations();
   });
 
+  async function fetchLinkedItems(donationId: number) {
+    linkedItemsLoading = true;
+    linkedItemsError = null;
+
+    const res = await supabase
+      .from('items')
+      .select('id, name, quantity')
+      .eq('donation_id', donationId)
+      .order('created_at', { ascending: false });
+
+    if (res.error) {
+      linkedItemsError = res.error.message;
+      linkedItems = [];
+      linkedItemsLoading = false;
+      return;
+    }
+
+    linkedItems = (res.data || []).map((item: any) => ({
+      id: item.id,
+      name: item.name,
+      quantity: item.quantity
+    }));
+    linkedItemsLoading = false;
+  }
+
   function openModal(d: Donation) {
     selected = d;
     showModal = true;
+    linkedItems = [];
+    fetchLinkedItems(d.id);
   }
 
   function closeModal() {
     showModal = false;
     selected = null;
+    linkedItems = [];
+    linkedItemsError = null;
+    linkedItemsLoading = false;
   }
 
   async function addDonation() {
@@ -290,6 +329,26 @@
         <p><strong>Created by:</strong> {selected.created_by}</p>
         <p><strong>Created at:</strong> {new Date(selected.created_at).toLocaleString()}</p>
         <p><strong>Updated at:</strong> {new Date(selected.updated_at).toLocaleString()}</p>
+
+        <div class="pt-2">
+          <p class="font-semibold">Linked Items</p>
+          {#if linkedItemsLoading}
+            <p class="text-sm text-gray-500">Loading linked items...</p>
+          {:else if linkedItemsError}
+            <p class="text-sm text-red-500">Error loading linked items: {linkedItemsError}</p>
+          {:else if linkedItems.length === 0}
+            <p class="text-sm text-gray-500">No items linked to this donation.</p>
+          {:else}
+            <ul class="mt-2 max-h-44 space-y-1 overflow-y-auto rounded border p-2">
+              {#each linkedItems as item}
+                <li class="rounded bg-gray-50 px-2 py-1 text-sm">
+                  <span class="font-medium">{item.name}</span>
+                  <span class="text-gray-600"> — Qty: {item.quantity}</span>
+                </li>
+              {/each}
+            </ul>
+          {/if}
+        </div>
       </div>
       <div class="mt-6 flex justify-end">
         <button
