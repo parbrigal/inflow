@@ -60,6 +60,7 @@
   let excelImportInput: HTMLInputElement | undefined;
   let aiCameraDebugLogs: string[] = [];
   let aiCaptureInProgress = false;
+  let aiCaptureGuardTimeout: ReturnType<typeof setTimeout> | null = null;
   let aiDetectedItem: Partial<Item> = {
     name: '',
     quantity: 1,
@@ -84,8 +85,33 @@
     console.info('[AI Camera Debug]', message);
   }
 
+  function clearAiCaptureGuard() {
+    aiCaptureInProgress = false;
+    if (aiCaptureGuardTimeout) {
+      clearTimeout(aiCaptureGuardTimeout);
+      aiCaptureGuardTimeout = null;
+    }
+  }
+
   function markAiPickerOpen(source: 'upload' | 'camera') {
-    aiCaptureInProgress = source === 'camera';
+    if (source === 'camera') {
+      aiCaptureInProgress = true;
+
+      if (aiCaptureGuardTimeout) {
+        clearTimeout(aiCaptureGuardTimeout);
+      }
+
+      aiCaptureGuardTimeout = setTimeout(() => {
+        if (aiCaptureInProgress) {
+          pushAiCameraDebug('Capture guard timeout', 'No file event received in time');
+          aiCaptureInProgress = false;
+        }
+        aiCaptureGuardTimeout = null;
+      }, 120000);
+    } else {
+      clearAiCaptureGuard();
+    }
+
     pushAiCameraDebug('Image picker opened', `source=${source}`);
   }
 
@@ -277,7 +303,7 @@
   function openAiSourceModal() {
     showAiSourceModal = true;
     error = null;
-    aiCaptureInProgress = false;
+    clearAiCaptureGuard();
     aiCameraDebugLogs = [];
     pushAiCameraDebug('AI source modal opened');
   }
@@ -381,7 +407,7 @@
     pushAiCameraDebug('Image selection event', `source=${source}, files=${selectedFilesCount}`);
 
     if (!selectedFile) {
-      aiCaptureInProgress = false;
+      clearAiCaptureGuard();
       if (source === 'camera') {
         error = 'Camera did not return an image file. Please try again.';
       }
@@ -449,7 +475,7 @@
       pushAiCameraDebug('AI detection failed', error || 'Unknown error');
     } finally {
       aiLoading = false;
-      aiCaptureInProgress = false;
+      clearAiCaptureGuard();
     }
   }
 
@@ -604,9 +630,7 @@
     const nextPath = navigation.to?.url.pathname || '(unknown)';
     if (nextPath === '/dashboard') {
       navigation.cancel();
-      error = 'Camera flow was interrupted by an unexpected navigation to Dashboard.';
-      pushAiCameraDebug('Navigation blocked', `to=${nextPath}`);
-      aiCaptureInProgress = false;
+      pushAiCameraDebug('Navigation blocked', `to=${nextPath}, type=${navigation.type}`);
     }
   });
 
@@ -654,6 +678,7 @@
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('pagehide', handlePageHide);
+      clearAiCaptureGuard();
     };
   });
 </script>
@@ -989,7 +1014,7 @@
           class="px-4 py-2"
           on:click={() => {
             showAiSourceModal = false;
-            aiCaptureInProgress = false;
+            clearAiCaptureGuard();
             pushAiCameraDebug('AI source modal closed');
           }}
         >
