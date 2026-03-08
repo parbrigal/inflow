@@ -25,7 +25,7 @@ export const load: PageServerLoad = async ({ locals }) => {
             .select('id, name, description, status, categories(name)')
             .in('status', openStatuses)
             .order('created_at', { ascending: false })
-            .limit(8),
+            .limit(4),
         supabase
             .from('requests')
             .select('id', { count: 'exact', head: true })

@@ -111,13 +111,18 @@ insert into categories (name, description) values
     ('Baby & Kids Items', 'Baby and children items'),
     ('Books & Educational Materials', 'Books and educational resources'),
     ('Furniture', 'Furniture and home furnishings'),
-    ('Household Items', 'Household items and kitchenware'),
     ('Electronics', 'Electronic devices and accessories'),
     ('Tools & Equipment', 'Tools and equipment'),
     ('Recreation & Sports', 'Recreation and sports items'),
     ('Medical & Mobility', 'Medical supplies and mobility aids'),
     ('Pet Supplies', 'Pet supplies and accessories'),
-    ('Financial & Gift Donations', 'Financial and gift donations')
+    ('Financial & Gift Donations', 'Financial and gift donations'),
+    ('Bathroom', 'Bathroom essentials and supplies'),
+    ('Bedroom - Adults', 'Adult bedroom essentials and furnishings'),
+    ('Bedroom - Child', 'Children bedroom essentials and furnishings'),
+    ('Bedroom - Young Adult', 'Young adult bedroom essentials and furnishings'),
+    ('Kitchen', 'Kitchen essentials and cookware'),
+    ('Living Room', 'Living room furniture and household essentials')
 on conflict (name) do nothing;
 
 -- ------------------------------------------------------------------
