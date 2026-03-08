@@ -19,7 +19,6 @@
     category_id: number | null;
     name: string;
     description: string;
-    status: string;
   };
 
   let requests: WishlistRequest[] = [];
@@ -38,8 +37,7 @@
   let newRequest: EditableRequest = {
     category_id: null,
     name: '',
-    description: '',
-    status: 'pending'
+    description: ''
   };
 
   $: hasSelectedRequests = selectedRequestIds.length > 0;
@@ -54,8 +52,7 @@
     newRequest = {
       category_id: null,
       name: '',
-      description: '',
-      status: 'pending'
+      description: ''
     };
     editingRequestId = null;
   }
@@ -65,8 +62,7 @@
     newRequest = {
       category_id: request.category_id,
       name: request.name,
-      description: request.description ?? '',
-      status: request.status
+      description: request.description ?? ''
     };
     showAddModal = true;
   }
@@ -109,8 +105,7 @@
     const payload = {
       category_id: newRequest.category_id,
       name: newRequest.name.trim(),
-      description: newRequest.description.trim() || null,
-      status: newRequest.status.trim() || 'pending'
+      description: newRequest.description.trim() || null
     };
 
     if (editingRequestId) {
@@ -268,7 +263,6 @@
             />
             <div>
               <h2 class="font-semibold">{request.name}</h2>
-              <p class="text-sm text-gray-500">{request.status}</p>
               {#if request.description}
                 <p class="text-sm text-gray-500">{request.description}</p>
               {/if}
@@ -322,10 +316,6 @@
         <div>
           <label for="wishlist-description" class="block text-sm font-medium">Description</label>
           <textarea id="wishlist-description" bind:value={newRequest.description} class="mt-1 w-full rounded border p-2" rows="3"></textarea>
-        </div>
-        <div>
-          <label for="wishlist-status" class="block text-sm font-medium">Status</label>
-          <input id="wishlist-status" bind:value={newRequest.status} class="mt-1 w-full rounded border p-2" required />
         </div>
         <div class="flex justify-end gap-2">
           <button
