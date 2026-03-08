@@ -46,15 +46,15 @@
       </nav>
       <div class="border-t p-4">
         {#if session}
-        <div class="flex items-center justify-between">
+        <div class="flex items-center">
           <div class="flex items-center">
             <img src="https://robohash.org/pixel-cat-1?set=set4&size=32x32" alt="avatar" class="h-8 w-8 rounded-full" />
             <div class="ml-3">
               <p class="text-sm font-semibold text-gray-800">{session.user.email}</p>
-              <a href="/profile" class="text-xs text-blue-600 hover:underline">View profile</a>
+              <a href="/profile" class="mt-1 block text-xs text-blue-600 hover:underline">View profile</a>
+              <button class="mt-1 block text-xs text-blue-600 hover:underline" on:click={signOut}>Sign out</button>
             </div>
           </div>
-          <button class="text-sm text-red-500 hover:underline" on:click={signOut}>Sign out</button>
         </div>
         {:else}
         <div class="text-center">
@@ -88,12 +88,12 @@
       <div></div>
     </header>
 
-    <main class="flex-1 overflow-auto px-6 py-4 bg-gray-50">
+    <main class="flex-1 overflow-auto bg-gray-50 px-6 py-4 pb-28">
       <slot />
     </main>
 
     <!-- funky under construction footer -->
-    <footer class="bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 px-6 py-4 text-white shadow-lg">
+    <footer class="fixed bottom-0 left-0 right-0 z-10 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 px-6 py-4 text-white shadow-lg lg:left-64">
       <div class="flex items-center justify-center gap-2 text-center">
         <span class="text-lg">🚀</span>
         <p class="text-sm font-bold">We're cooking up something amazing! But it's not quite done baking.</p>
