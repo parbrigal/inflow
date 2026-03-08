@@ -275,6 +275,84 @@
     };
   }
 
+  async function toJpegBlob(
+    image: HTMLImageElement,
+    width: number,
+    height: number,
+    quality: number
+  ): Promise<Blob | null> {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+
+    const context = canvas.getContext('2d');
+    if (!context) {
+      return null;
+    }
+
+    context.drawImage(image, 0, 0, width, height);
+
+    return await new Promise((resolve) => {
+      canvas.toBlob((blob) => resolve(blob), 'image/jpeg', quality);
+    });
+  }
+
+  async function optimizeImageForUpload(file: File): Promise<File> {
+    const maxUploadBytes = 1_500_000;
+    const maxDimension = 1600;
+
+    if (file.size <= maxUploadBytes) {
+      return file;
+    }
+
+    const imageUrl = URL.createObjectURL(file);
+
+    try {
+      const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error('Unable to read selected image.'));
+        img.src = imageUrl;
+      });
+
+      const sourceWidth = image.naturalWidth || image.width;
+      const sourceHeight = image.naturalHeight || image.height;
+      if (!sourceWidth || !sourceHeight) {
+        return file;
+      }
+
+      const initialScale = Math.min(1, maxDimension / Math.max(sourceWidth, sourceHeight));
+      let targetWidth = Math.max(1, Math.round(sourceWidth * initialScale));
+      let targetHeight = Math.max(1, Math.round(sourceHeight * initialScale));
+      let quality = 0.82;
+
+      let compressed = await toJpegBlob(image, targetWidth, targetHeight, quality);
+      if (!compressed) {
+        return file;
+      }
+
+      while (compressed.size > maxUploadBytes && (quality > 0.5 || Math.max(targetWidth, targetHeight) > 900)) {
+        if (quality > 0.5) {
+          quality = Math.max(0.5, quality - 0.1);
+        } else {
+          targetWidth = Math.max(1, Math.round(targetWidth * 0.85));
+          targetHeight = Math.max(1, Math.round(targetHeight * 0.85));
+        }
+
+        const nextCompressed = await toJpegBlob(image, targetWidth, targetHeight, quality);
+        if (!nextCompressed) {
+          break;
+        }
+        compressed = nextCompressed;
+      }
+
+      const baseName = file.name.replace(/\.[^/.]+$/, '') || 'capture';
+      return new File([compressed], `${baseName}.jpg`, { type: 'image/jpeg' });
+    } finally {
+      URL.revokeObjectURL(imageUrl);
+    }
+  }
+
   async function handleAiImageSelected(event: Event) {
     const input = event.currentTarget as HTMLInputElement;
     const selectedFile = input.files?.[0];
@@ -293,16 +371,27 @@
     error = null;
 
     try {
+      const optimizedFile = await optimizeImageForUpload(file);
       const formData = new FormData();
-      formData.append('image', file);
+      formData.append('image', optimizedFile);
 
       const response = await fetch('/api/vision/items', {
         method: 'POST',
         body: formData
       });
 
-      const data = await response.json();
+      const responseBody = await response.text();
+      let data: any = null;
+      try {
+        data = responseBody ? JSON.parse(responseBody) : null;
+      } catch {
+        data = null;
+      }
+
       if (!response.ok) {
+        if (response.status === 413) {
+          throw new Error('Image is too large. Please retake the photo and try again.');
+        }
         throw new Error(data?.error || 'Unable to analyze image.');
       }
 
