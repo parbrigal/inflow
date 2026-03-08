@@ -8,6 +8,7 @@
   export let signOut: () => Promise<void> = async () => {};
 
   let sidebarOpen = false;
+  let showFooter = true;
 
   const breadcrumbs = derived(page, ($page) => {
     const parts = $page.url.pathname.split('/').filter(Boolean);
@@ -52,7 +53,7 @@
             <div class="ml-3">
               <p class="text-sm font-semibold text-gray-800">{session.user.email}</p>
               <a href="/profile" class="mt-1 block text-xs text-blue-600 hover:underline">View profile</a>
-              <button class="mt-1 block text-xs text-blue-600 hover:underline" on:click={signOut}>Sign out</button>
+              <button class="mt-1 block text-xs text-red-600 hover:underline" on:click={signOut}>Sign out</button>
             </div>
           </div>
         </div>
@@ -88,18 +89,32 @@
       <div></div>
     </header>
 
-    <main class="flex-1 overflow-auto bg-gray-50 px-6 py-4 pb-28">
+    <main class={`flex-1 overflow-auto bg-gray-50 px-6 py-4 ${showFooter ? 'pb-28' : 'pb-4'}`}>
       <slot />
     </main>
 
     <!-- funky under construction footer -->
-    <footer class="fixed bottom-0 left-0 right-0 z-10 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 px-6 py-4 text-white shadow-lg lg:left-64">
-      <div class="flex items-center justify-center gap-2 text-center">
-        <span class="text-lg">🚀</span>
-        <p class="text-sm font-bold">We're cooking up something amazing! But it's not quite done baking.</p>
-        <span class="text-lg">✨</span>
-      </div>
-      <p class="text-center text-xs opacity-90 mt-1">This app is under construction • Check back soon!</p>
-    </footer>
+    {#if showFooter}
+      <footer class="fixed bottom-0 left-0 right-0 z-10 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 px-6 py-4 text-white shadow-lg lg:left-64">
+        <div class="flex items-start justify-between gap-2">
+          <div class="flex-1">
+            <div class="flex items-center justify-center gap-2 text-center">
+              <span class="text-lg">🚀</span>
+              <p class="text-sm font-bold">We're cooking up something amazing! But it's not quite done baking.</p>
+              <span class="text-lg">✨</span>
+            </div>
+            <p class="mt-1 text-center text-xs opacity-90">This app is under construction • Check back soon!</p>
+          </div>
+          <button
+            type="button"
+            class="shrink-0 rounded px-2 text-white hover:bg-white/20"
+            aria-label="Close footer"
+            on:click={() => (showFooter = false)}
+          >
+            ×
+          </button>
+        </div>
+      </footer>
+    {/if}
   </div>
 </div>
