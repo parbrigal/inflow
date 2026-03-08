@@ -70,7 +70,7 @@
       </div>
 
       <div class="flex flex-wrap gap-3">
-        <a href="/wishlist" class="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700">View Full Wishlist</a>
+        <a href="/wishlist/public" class="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700">View Full Wishlist</a>
         <a href="/signup" class="rounded-lg border-2 border-blue-600 px-6 py-3 font-semibold text-blue-600 transition hover:bg-blue-50">Sign Up</a>
         <a href="/sign-in" class="rounded-lg border border-gray-300 px-6 py-3 font-semibold text-gray-700 transition hover:bg-gray-100">Sign In</a>
       </div>
@@ -79,7 +79,7 @@
     <section class="rounded-2xl bg-white/85 p-6 shadow-xl backdrop-blur sm:p-8">
       <div class="mb-5 flex items-center justify-between">
         <h2 class="text-xl font-bold text-gray-900">Urgent Wishlist Items</h2>
-        <a href="/wishlist" class="text-sm font-semibold text-blue-700 hover:text-blue-800">See all</a>
+        <a href="/wishlist/public" class="text-sm font-semibold text-blue-700 hover:text-blue-800">See all</a>
       </div>
 
       {#if data.loadError}
@@ -108,7 +108,7 @@
     <h2 class="text-2xl font-bold">Your donation can change someone’s week</h2>
     <p class="mt-2 text-blue-100">Choose an item from the wishlist and support needs that are active right now.</p>
     <div class="mt-4">
-      <a href="/wishlist" class="inline-flex rounded-lg bg-white px-6 py-3 font-semibold text-blue-700 transition hover:bg-blue-50">Donate from Wishlist</a>
+      <a href="/wishlist/public" class="inline-flex rounded-lg bg-white px-6 py-3 font-semibold text-blue-700 transition hover:bg-blue-50">Donate from Wishlist</a>
     </div>
   </div>
 </div>
