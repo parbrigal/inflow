@@ -6,7 +6,7 @@
 	import type { Session } from '@supabase/supabase-js';
 	import AppLayout from '$lib/AppLayout.svelte';
 
-	export let data: { session: Session | null };
+	export let data: { session: Session | null; isAdmin: boolean };
 
 	let session: Session | null = null;
 
@@ -27,7 +27,7 @@
 </svelte:head>
 
 {#if session}
-	<AppLayout {session} {signOut}>
+	<AppLayout {session} isAdmin={data.isAdmin} {signOut}>
 		<slot />
 	</AppLayout>
 {:else}

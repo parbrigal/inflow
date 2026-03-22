@@ -11,7 +11,19 @@ import type { Handle } from '@sveltejs/kit';
 export const handle: Handle = async ({ event, resolve }) => {
     // make a Supabase client bound to the incoming request's cookies
     const supabase = createServerClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
-        cookies: event.cookies
+        cookies: {
+            getAll() {
+                return event.cookies.getAll();
+            },
+            setAll(cookiesToSet) {
+                cookiesToSet.forEach(({ name, value, options }) => {
+                    event.cookies.set(name, value, {
+                        ...options,
+                        path: options.path ?? '/'
+                    });
+                });
+            }
+        }
     });
 
     // expose to load functions / actions

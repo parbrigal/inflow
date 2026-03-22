@@ -35,7 +35,7 @@
   });
 </script>
 
-<div class="landing-container min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-violet-100 px-4 py-8 sm:px-6 lg:px-8">
+<div class="landing-container flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-10">
   <div class="background">
     {#each boxes as box (box.id)}
       <div
@@ -52,34 +52,26 @@
     {/each}
   </div>
 
-  <div class="relative z-10 mx-auto grid w-full max-w-6xl gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-start">
-    <section class="rounded-2xl bg-white/80 p-8 shadow-xl backdrop-blur">
-      <p class="mb-3 inline-flex rounded-full bg-indigo-100 px-3 py-1 text-sm font-semibold text-indigo-700">Community Wishlist</p>
-      <h1 class="mb-4 text-4xl font-bold leading-tight text-gray-900 sm:text-5xl">Turn generosity into real impact today</h1>
-      <p class="mb-6 text-lg text-gray-600">Browse the most urgent wishlist requests and help families receive essentials faster.</p>
+  <div class="relative z-10 mx-auto w-full max-w-5xl space-y-8">
+    <section class="rounded-3xl bg-white/85 p-8 text-center shadow-xl backdrop-blur sm:p-10">
+      <h1 class="mb-4 text-5xl font-bold text-gray-900">Welcome to Inflow</h1>
+      <p class="mx-auto mb-7 max-w-2xl text-xl text-gray-600">Your personal donation management platform for supporting community needs in real time.</p>
 
-      <div class="mb-8 grid gap-3 sm:grid-cols-2">
-        <div class="rounded-xl border border-indigo-100 bg-indigo-50 p-4">
-          <p class="text-sm font-medium text-indigo-700">Open Requests</p>
-          <p class="mt-1 text-2xl font-bold text-indigo-900">{data.openWishlistCount}</p>
-        </div>
-        <div class="rounded-xl border border-emerald-100 bg-emerald-50 p-4">
-          <p class="text-sm font-medium text-emerald-700">Every Item Helps</p>
-          <p class="mt-1 text-2xl font-bold text-emerald-900">Make a Difference</p>
-        </div>
+      <div class="mb-7 flex flex-wrap justify-center gap-4">
+        <a href="/sign-in" class="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700">Sign In</a>
+        <a href="/signup" class="rounded-lg border-2 border-blue-600 px-6 py-3 font-semibold text-blue-600 transition hover:bg-blue-50">Sign Up</a>
       </div>
 
-      <div class="flex flex-wrap gap-3">
-        <a href="/wishlist/public" class="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700">View Full Wishlist</a>
-        <a href="/signup" class="rounded-lg border-2 border-blue-600 px-6 py-3 font-semibold text-blue-600 transition hover:bg-blue-50">Sign Up</a>
-        <a href="/sign-in" class="rounded-lg border border-gray-300 px-6 py-3 font-semibold text-gray-700 transition hover:bg-gray-100">Sign In</a>
+      <div class="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-700">
+        <span class="h-2.5 w-2.5 rounded-full bg-indigo-500"></span>
+        {data.openWishlistCount} open wishlist requests
       </div>
     </section>
 
-    <section class="rounded-2xl bg-white/85 p-6 shadow-xl backdrop-blur sm:p-8">
-      <div class="mb-5 flex items-center justify-between">
-        <h2 class="text-xl font-bold text-gray-900">Urgent Wishlist Items</h2>
-        <a href="/wishlist/public" class="text-sm font-semibold text-blue-700 hover:text-blue-800">See all</a>
+    <section class="rounded-3xl bg-white/90 p-6 shadow-xl backdrop-blur sm:p-8">
+      <div class="mb-5 flex items-center justify-between gap-4">
+        <h2 class="text-xl font-bold text-gray-900">Current Wishlist Requests</h2>
+        <a href="/wishlist/public" class="rounded-md border border-blue-200 px-3 py-1.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-50">View Full Wishlist</a>
       </div>
 
       {#if data.loadError}
@@ -87,29 +79,19 @@
       {:else if data.wishlist.length === 0}
         <p class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">No active requests at the moment. Please check back soon.</p>
       {:else}
-        <ul class="space-y-3">
+        <ul class="grid gap-3 md:grid-cols-2">
           {#each data.wishlist as item}
             <li class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md">
-              <div class="mb-2">
-                <h3 class="font-semibold text-gray-900">{item.name}</h3>
-              </div>
-              <p class="mb-2 text-sm font-medium text-indigo-700">{item.categoryName}</p>
+              <h3 class="font-semibold text-gray-900">{item.name}</h3>
+              <p class="mt-1 text-sm font-medium text-indigo-700">{item.categoryName}</p>
               {#if item.description}
-                <p class="text-sm text-gray-600">{item.description}</p>
+                <p class="mt-2 text-sm text-gray-600">{item.description}</p>
               {/if}
             </li>
           {/each}
         </ul>
       {/if}
     </section>
-  </div>
-
-  <div class="relative z-10 mx-auto mt-8 w-full max-w-6xl rounded-2xl border border-blue-100 bg-blue-600/90 p-6 text-center text-white shadow-lg">
-    <h2 class="text-2xl font-bold">Your donation can change someone’s week</h2>
-    <p class="mt-2 text-blue-100">Choose an item from the wishlist and support needs that are active right now.</p>
-    <div class="mt-4">
-      <a href="/wishlist/public" class="inline-flex rounded-lg bg-white px-6 py-3 font-semibold text-blue-700 transition hover:bg-blue-50">Donate from Wishlist</a>
-    </div>
   </div>
 </div>
 

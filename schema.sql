@@ -17,6 +17,7 @@ ALTER SEQUENCE roles_id_seq RESTART WITH 1;
 -- Insert default roles
 insert into roles (name, description) values
     ('Administrator', 'Full system access and administrative privileges'),
+    ('Donor', 'Can donate and fulfill wishlist requests'),
     ('Volunteer', 'Can manage donations and items'),
     ('User', 'Basic user access')
 on conflict (name) do nothing;
@@ -40,13 +41,31 @@ create index if not exists profiles_role_idx on profiles(role_id);
 -- ------------------------------------------------------------------
 create or replace function public.handle_new_user()
 returns trigger as $$
+declare
+    selected_role text;
+    selected_role_id integer;
 begin
+    selected_role := lower(coalesce(new.raw_user_meta_data->>'signup_role', 'user'));
+
+    if selected_role = 'administrator' then
+        selected_role := 'administrator';
+    elsif selected_role = 'donor' then
+        selected_role := 'donor';
+    else
+        selected_role := 'user';
+    end if;
+
+    select id into selected_role_id
+    from public.roles
+    where lower(name) = selected_role
+    limit 1;
+
   insert into public.profiles (id, full_name, avatar_url, role_id)
   values (
     new.id,
     new.raw_user_meta_data->>'full_name',
     'https://api.dicebear.com/7.x/avataaars/svg?seed=' || new.id,
-    1
+        coalesce(selected_role_id, 3)
   );
   return new;
 end;

@@ -5,6 +5,7 @@
   import type { Session } from '@supabase/supabase-js';
   import { Home } from 'lucide-svelte';
   export let session: Session | null = null;
+  export let isAdmin = false;
   export let signOut: () => Promise<void> = async () => {};
 
   let sidebarOpen = false;
@@ -44,6 +45,9 @@
         <a href="/wishlist" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100" on:click={closeSidebar}>Wishlist</a>
         <a href="/items" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100" on:click={closeSidebar}>Items</a>
         <a href="/donations" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100" on:click={closeSidebar}>Donations</a>
+        {#if isAdmin}
+          <a href="/protected/create-admin" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100" on:click={closeSidebar}>Create Admin</a>
+        {/if}
         <a href="/settings" class="mt-1 block rounded px-3 py-2 text-gray-700 hover:bg-gray-100" on:click={closeSidebar}>Settings</a>
       </nav>
       <div class="border-t p-4">
